@@ -314,6 +314,35 @@ func (self *Connection) Open() (err error) {
 	return nil
 }
 
+//Opens a database connection with provided dial info
+func (self *Connection) OpenWithDialInfo(dialInfo *mgo.DialInfo) (err error) {
+
+	defer func() {
+		if r := recover(); r != nil {
+
+			if e, ok := r.(error); ok {
+				err = e
+			} else if e, ok := r.(string); ok {
+				err = errors.New(e)
+			} else {
+				err = errors.New(fmt.Sprint(r))
+			}
+		}
+	}()
+
+	session, err := mgo.DialWithInfo(dialInfo)
+
+	if err != nil {
+		return err
+	}
+
+	self.Session = session
+
+	self.Session.SetMode(mgo.Monotonic, true)
+	return nil
+}
+
+
 //Closes an existing database connection
 func (self *Connection) Close() {
 
